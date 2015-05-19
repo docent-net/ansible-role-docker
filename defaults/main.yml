@@ -1,2 +1,2 @@
 docker:
-    sysuser=docker
+    sysuser: docker # system user for docker daemon
