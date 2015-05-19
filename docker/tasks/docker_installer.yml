@@ -1,0 +1,34 @@
+---
+# This playbook installs Docker
+
+- name: Install Docker package
+  yum: name=docker-io state=latest
+
+- name: Create docker group
+  group:
+    name=docker
+    state=present
+
+- name: Add user to docker group
+  command: usermod -a -G docker {{ docker.sysuser }}
+
+- name: Change docker sock group
+  command: chgrp docker /var/run/docker.sock
+
+- name: Enable docker service
+  service:
+    name=docker
+    enabled=yes
+
+- name: Switch to OverlayFS storage backend
+  lineinfile:
+    dest=/etc/sysconfig/docker-storage
+    state=present
+    regexp="^DOCKER_STORAGE_OPTIONS=(.*)(--storage-driver=.*\s*)*(.*)$"
+    line='DOCKER_STORAGE_OPTIONS=\1 --storage-driver=overlay \3'
+    backrefs=yes
+
+- name: Restart Docker service
+  service:
+    name=docker
+    state=restarted
